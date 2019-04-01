@@ -124,14 +124,22 @@ def grad_cam(input_model, image, category_index, layer_name):
 
 preprocessed_input = load_image(sys.argv[1])
 
-model = VGG16(weights='imagenet')
+model = VGG16(weights='imagenet') # vgg16 model with original weights
 
-predictions = model.predict(preprocessed_input)
-top_1 = decode_predictions(predictions)[0][0]
+predictions = model.predict(preprocessed_input) # image path passed above and image is read 
+top_1 = decode_predictions(predictions)[0][0] 
 print('Predicted class:')
+
+'''
+    probabilities of top 3 class
+'''
 print('%s (%s) with probability %.2f' % (top_1[1], top_1[0], top_1[2]))
 
 predicted_class = np.argmax(predictions)
+'''
+    layer_name="block5_conv3"
+    preprocessed_input: input image
+'''
 cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "block5_conv3")
 cv2.imwrite("gradcam.jpg", cam)
 
