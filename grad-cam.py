@@ -115,14 +115,26 @@ def grad_cam(input_model, image, category_index, layer_name):
     '''
     
     conv_output =  [l for l in model.layers[0].layers if l.name is layer_name][0].output
+    
+    '''
+        what exactly is a grads
+        after few lines it is same as  weights
+    '''
     grads = normalize(K.gradients(loss, conv_output)[0])
     gradient_function = K.function([model.layers[0].input], [conv_output, grads])
-
+    
+    '''
+        not clear about below 2 quantity
+    '''
     output, grads_val = gradient_function([image])
     output, grads_val = output[0, :], grads_val[0, :, :, :]
 
     weights = np.mean(grads_val, axis = (0, 1))
     cam = np.ones(output.shape[0 : 2], dtype = np.float32)
+    
+    '''
+        to which layer tfis weights belong???
+    '''
 
     for i, w in enumerate(weights):
         cam += w * output[:, :, i]
@@ -145,7 +157,11 @@ preprocessed_input = load_image(sys.argv[1])
 
 model = VGG16(weights='imagenet') # vgg16 model with original weights
 
-predictions = model.predict(preprocessed_input) # image path passed above and image is read 
+predictions = model.predict(preprocessed_input) # image path passed above and image is read
+
+'''
+    what exactly this decode do??
+'''
 top_1 = decode_predictions(predictions)[0][0] 
 print('Predicted class:')
 
