@@ -85,16 +85,35 @@ def deprocess_image(x):
     x = np.clip(x, 0, 255).astype('uint8')
     return x
 
+'''
+    input_model: its vgg16 model with weights
+    layer_name:"block5_conv3"
+'''
 def grad_cam(input_model, image, category_index, layer_name):
     model = Sequential()
     model.add(input_model)
 
     nb_classes = 1000
+    
+    '''
+        target_layer:??
+    '''
     target_layer = lambda x: target_category_loss(x, category_index, nb_classes)
+    
+    '''
+        not clear about below code
+    '''
     model.add(Lambda(target_layer,
                      output_shape = target_category_loss_output_shape))
-
+    '''
+        why loss is sum of last layer output
+    '''
     loss = K.sum(model.layers[-1].output)
+    
+    '''
+    conv_output contains "block5_conv3" layers output
+    '''
+    
     conv_output =  [l for l in model.layers[0].layers if l.name is layer_name][0].output
     grads = normalize(K.gradients(loss, conv_output)[0])
     gradient_function = K.function([model.layers[0].input], [conv_output, grads])
@@ -139,6 +158,7 @@ predicted_class = np.argmax(predictions)
 '''
     layer_name="block5_conv3"
     preprocessed_input: input image
+    model: is vgg16 model
 '''
 cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "block5_conv3")
 cv2.imwrite("gradcam.jpg", cam)
